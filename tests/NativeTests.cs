@@ -104,25 +104,26 @@ namespace LevelDB
 
             Native.leveldb_put(Database, options, "key1", "value1");
             var value1 = Native.leveldb_get(Database, options, "key1");
-            Assert.AreEqual("value1", value1);
+            Assert.That("value1", Is.EqualTo(value1));
 
             Native.leveldb_put(Database, options, "key2", "value2");
             var value2 = Native.leveldb_get(Database, options, "key2");
-            Assert.AreEqual("value2", value2);
+            Assert.That("value2", Is.EqualTo(value2));
 
             Native.leveldb_put(Database, options, "key3", "value3");
             var value3 = Native.leveldb_get(Database, options, "key3");
-            Assert.AreEqual("value3", value3);
+            Assert.That("value3", Is.EqualTo(value3));
 
             // verify checksums
             Native.leveldb_readoptions_set_verify_checksums(options, true);
             value1 = Native.leveldb_get(Database, options, "key1");
-            Assert.AreEqual("value1", value1);
+            Assert.That("value1", Is.EqualTo(value1));
+
 
             // no fill cache
             Native.leveldb_readoptions_set_fill_cache(options, false);
             value2 = Native.leveldb_get(Database, options, "key2");
-            Assert.AreEqual("value2", value2);
+            Assert.That("value2", Is.EqualTo(value2));
 
             Native.leveldb_readoptions_destroy(options);
         }
@@ -135,10 +136,12 @@ namespace LevelDB
 
             var readOptions = Native.leveldb_readoptions_create();
             var value1 = Native.leveldb_get(Database, readOptions, "key1");
-            Assert.AreEqual("value1", value1);
+            Assert.That("value1", Is.EqualTo(value1));
+
             Native.leveldb_delete(Database, writeOptions, "key1");
             value1 = Native.leveldb_get(Database, readOptions, "key1");
-            Assert.IsNull(value1);
+            Assert.That(value1, Is.EqualTo(null));
+
 
             Native.leveldb_writeoptions_destroy(writeOptions);
             Native.leveldb_readoptions_destroy(readOptions);
@@ -157,15 +160,16 @@ namespace LevelDB
 
             var readOptions = Native.leveldb_readoptions_create();
             var value1 = Native.leveldb_get(Database, readOptions, "key1");
-            Assert.IsNull(value1);
+            Assert.That(value1, Is.EqualTo(null));
+
             var value2 = Native.leveldb_get(Database, readOptions, "key2");
-            Assert.AreEqual("value2", value2);
+            Assert.That("value2", Is.EqualTo(value2));
 
             Native.leveldb_writebatch_delete(writeBatch, "key2");
             Native.leveldb_writebatch_clear(writeBatch);
             Native.leveldb_write(Database, writeOptions, writeBatch);
             value2 = Native.leveldb_get(Database, readOptions, "key2");
-            Assert.AreEqual("value2", value2);
+            Assert.That("value2", Is.EqualTo(value2));
 
             Native.leveldb_writebatch_destroy(writeBatch);
             Native.leveldb_writeoptions_destroy(writeOptions);
@@ -182,10 +186,10 @@ namespace LevelDB
             IntPtr iter = Native.leveldb_create_iterator(Database, readOptions);
 
             Native.leveldb_iter_seek_to_last(iter);
-            Assert.IsTrue(Native.leveldb_iter_valid(iter));
-
+            Assert.That(Native.leveldb_iter_valid(iter), Is.True);
             Native.leveldb_iter_next(iter);
-            Assert.IsFalse(Native.leveldb_iter_valid(iter));
+            Assert.That(Native.leveldb_iter_valid(iter), Is.False);
+
         }
 
         [Test]
@@ -210,13 +214,13 @@ namespace LevelDB
             Native.leveldb_iter_destroy(iter);
             Native.leveldb_readoptions_destroy(readOptions);
 
-            Assert.AreEqual(3, entries.Count);
-            Assert.AreEqual("key1",   entries[0].Key);
-            Assert.AreEqual("value1", entries[0].Value);
-            Assert.AreEqual("key2",   entries[1].Key);
-            Assert.AreEqual("value2", entries[1].Value);
-            Assert.AreEqual("key3",   entries[2].Key);
-            Assert.AreEqual("value3", entries[2].Value);
+            Assert.That(entries.Count, Is.EqualTo(3));
+            Assert.That("key1", Is.EqualTo(entries[0].Key));
+            Assert.That("value1", Is.EqualTo(entries[0].Value));
+            Assert.That("key2", Is.EqualTo(entries[1].Key));
+            Assert.That("value2", Is.EqualTo(entries[1].Value));
+            Assert.That("key3", Is.EqualTo(entries[2].Key));
+            Assert.That("value3", Is.EqualTo(entries[2].Value));
 
             Native.leveldb_writeoptions_destroy(writeOptions);
         }
@@ -260,9 +264,11 @@ namespace LevelDB
             var readOptions = Native.leveldb_readoptions_create();
             Native.leveldb_readoptions_set_snapshot(readOptions, snapshot);
             var val1 = Native.leveldb_get(Database, readOptions, "key1");
-            Assert.AreEqual("value1", val1);
+            Assert.That("value1", Is.EqualTo(val1));
+
             var val2 = Native.leveldb_get(Database, readOptions, "key2");
-            Assert.IsNull(val2);
+            Assert.That(val2, Is.EqualTo(null));
+
             Native.leveldb_readoptions_destroy(readOptions);
 
             // release snapshot
@@ -274,9 +280,10 @@ namespace LevelDB
         public void Version()
         {
             var major = Native.leveldb_major_version();
-            Assert.Greater(major, 0);
+            Assert.That(major, Is.GreaterThan(0));
             var minor = Native.leveldb_minor_version();
-            Assert.Greater(minor, 0);
+            Assert.That(major, Is.GreaterThan(0));
+
             Console.WriteLine("LevelDB version: {0}.{1}", major, minor);
         }
 
@@ -312,7 +319,8 @@ namespace LevelDB
         public void Property()
         {
             var property = Native.leveldb_property_value(Database, "leveldb.stats");
-            Assert.IsNotNull(property);
+            Assert.That(property, Is.Not.EqualTo(null));
+
             Console.WriteLine("LevelDB stats: {0}", property);
         }
     }

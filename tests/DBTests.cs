@@ -78,16 +78,17 @@ namespace LevelDB
             Database.Dispose();
         }
 
+        //[ExpectedException(typeof(ObjectDisposedException))]
         [Test]
-        [ExpectedException(typeof(ObjectDisposedException))]
         public void DisposeChecks()
         {
             Database.Dispose();
-            Database.Get("key1");
+            //Database.Get("key1");
+            Assert.That(() => Database.Get("key1"), Throws.TypeOf<ObjectDisposedException>());
         }
 
+        //[ExpectedException(typeof(ApplicationException))]
         [Test]
-        [ExpectedException(typeof(ApplicationException))]
         public void Error()
         {
             var options = new Options() {
@@ -96,6 +97,7 @@ namespace LevelDB
             var db = new DB(options, "non-existent");
             Assert.Fail();
             db.Get("key1");
+            Assert.That(() => db.Get("key1"), Throws.TypeOf<ApplicationException>());
         }
 
         [Test]
@@ -116,29 +118,31 @@ namespace LevelDB
         {
             Database.Put(null, "key1", "value1");
             var value1 = Database.Get(null, "key1");
-            Assert.AreEqual("value1", value1);
+            Assert.That("value1", Is.EqualTo(value1));
 
             Database.Put(null, "key2", "value2");
             var value2 = Database.Get(null, "key2");
-            Assert.AreEqual("value2", value2);
+            Assert.That("value2", Is.EqualTo(value2));
 
             Database.Put(null, "key3", "value3");
             var value3 = Database.Get(null, "key3");
-            Assert.AreEqual("value3", value3);
+            Assert.That("value3", Is.EqualTo(value3));
 
             // verify checksum
             var options = new ReadOptions() {
                 VerifyChecksums = true
             };
             value1 = Database.Get(options, "key1");
-            Assert.AreEqual("value1", value1);
+            Assert.That("value1", Is.EqualTo(value1));
+
 
             // no fill cache
             options = new ReadOptions() {
                 FillCache = false
             };
             value2 = Database.Get(options, "key2");
-            Assert.AreEqual("value2", value2);
+            Assert.That("value2", Is.EqualTo(value2));
+
         }
 
         [Test]
@@ -146,10 +150,12 @@ namespace LevelDB
         {
             Database.Put("key1", "value1");
             var value1 = Database.Get(null, "key1");
-            Assert.AreEqual("value1", value1);
+            Assert.That("value1", Is.EqualTo(value1));
+
             Database.Delete(null, "key1");
             value1 = Database.Get(null, "key1");
-            Assert.IsNull(value1);
+            Assert.That(value1, Is.EqualTo(null));
+
         }
 
         [Test]
@@ -163,14 +169,16 @@ namespace LevelDB
             Database.Write(writeBatch);
 
             var value1 = Database.Get("key1");
-            Assert.IsNull(value1);
+            Assert.That(value1, Is.EqualTo(null));
+
             var value2 = Database.Get("key2");
-            Assert.AreEqual("value2", value2);
+            Assert.That(value2, Is.EqualTo(value2));
+
 
             writeBatch.Delete("key2").Clear();
             Database.Write(writeBatch);
             value2 = Database.Get("key2");
-            Assert.AreEqual("value2", value2);
+            Assert.That("value2", Is.EqualTo(value2));
         }
 
         [Test]
@@ -180,10 +188,10 @@ namespace LevelDB
 
             var iter = new Iterator(Database, null);
             iter.SeekToLast();
-            Assert.IsTrue(iter.IsValid);
+            Assert.That(iter.IsValid, Is.True);
 
             iter.Next();
-            Assert.IsFalse(iter.IsValid);
+            Assert.That(iter.IsValid, Is.False);
         }
 
         [Test]
@@ -198,13 +206,14 @@ namespace LevelDB
                 entries.Add(entry);
             }
 
-            Assert.AreEqual(3, entries.Count);
-            Assert.AreEqual("key1", entries[0].Key);
-            Assert.AreEqual("value1", entries[0].Value);
-            Assert.AreEqual("key2", entries[1].Key);
-            Assert.AreEqual("value2", entries[1].Value);
-            Assert.AreEqual("key3", entries[2].Key);
-            Assert.AreEqual("value3", entries[2].Value);
+            Assert.That(3, Is.EqualTo(entries.Count));
+            Assert.That("key1", Is.EqualTo(entries[0].Key));
+            Assert.That("value1", Is.EqualTo(entries[0].Value));
+            Assert.That("key2", Is.EqualTo(entries[1].Key));
+            Assert.That("value2", Is.EqualTo(entries[1].Value));
+            Assert.That("key3", Is.EqualTo(entries[2].Key));
+            Assert.That("value3", Is.EqualTo(entries[2].Value));
+
         }
 
         [Test]
@@ -245,16 +254,18 @@ namespace LevelDB
                 Snapshot = snapshot
             };
             var val1 = Database.Get(readOptions, "key1");
-            Assert.AreEqual("value1", val1);
+            Assert.That("value1", Is.EqualTo(val1));
             var val2 = Database.Get(readOptions, "key2");
-            Assert.IsNull(val2);
+            Assert.That(val2, Is.EqualTo(null));
+
 
             // read from non-snapshot
             readOptions.Snapshot = null;
             val1 = Database.Get(readOptions, "key1");
-            Assert.AreEqual("value1", val1);
+            Assert.That("value1", Is.EqualTo(val1));
             val2 = Database.Get(readOptions, "key2");
-            Assert.AreEqual("value2", val2);
+            Assert.That("value2", Is.EqualTo(val2));
+
 
             // release snapshot
             // GC calls ~Snapshot() for us
@@ -288,7 +299,8 @@ namespace LevelDB
         public void Property()
         {
             var property = Database.GetProperty("leveldb.stats");
-            Assert.IsNotNull(property);
+            Assert.That(property, Is.Not.EqualTo(null));
+
             Console.WriteLine("LevelDB stats: {0}", property);
         }
     }
